@@ -166,7 +166,7 @@ class TransformerTestCase(TestCase):
         trans.transform(lambda: None)
         expect(engine.calls['horizontal_flip']).to_equal(1)
         expect(engine.calls['vertical_flip']).to_equal(1)
-    
+
     @staticmethod
     def test_can_resize_with_stretch():
         data = TestData(

@@ -83,7 +83,7 @@ class TestData(object):
             source_width, source_height,
             target_width, target_height,
             halign, valign, focal_points,
-            crop_left, crop_top, crop_right, crop_bottom, 
+            crop_left, crop_top, crop_right, crop_bottom,
             fit_in=False, adaptive=False, full=False,
             meta=False, stretch=False):
 

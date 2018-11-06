@@ -15,5 +15,5 @@ from tests.base import FilterTestCase
 
 class StretchFilterTestCase(FilterTestCase):
     def test_stretch_filter(self):
-        image = self.get_filtered('source.jpg', 'thumbor.filters.stretch', 'stretch()')
+        self.get_filtered('source.jpg', 'thumbor.filters.stretch', 'stretch()')
         expect(self.context.request.stretch).to_be_true()
