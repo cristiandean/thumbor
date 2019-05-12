@@ -349,8 +349,8 @@ class Engine(BaseEngine):
                 'You need filters enabled to use paste with merge. Please reinstall ' +
                 'thumbor with proper compilation of its filters.')
 
-        self.enable_alpha()
-        other_engine.enable_alpha()
+        # self.enable_alpha()
+        # other_engine.enable_alpha()
 
         image = self.image
         other_image = other_engine.image

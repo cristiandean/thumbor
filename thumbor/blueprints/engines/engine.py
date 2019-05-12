@@ -207,6 +207,21 @@ class Engine(object):
 
     @classmethod
     @gen.coroutine
+    def paste(cls, sender, details, other_engine, pos, merge):
+        'Paste the image according to other_engine, position and merge'
+
+        img = yield Events.trigger(
+            Events.Engine.paste,
+            sender,
+            details=details,
+            other_engine=other_engine,
+            pos=pos,
+            merge=merge
+        )
+        return img
+
+    @classmethod
+    @gen.coroutine
     def get_image_data_as_rgb(cls, sender, details):
         'Get Image data as RGB Buffer'
         image_mode, image_data = yield Events.trigger(
@@ -311,6 +326,18 @@ class Engine(object):
             width=width,
             height=height,
         )
+
+    @classmethod
+    @gen.coroutine
+    def gen_image(cls, sender, details, size, color):
+        img = yield Events.trigger(
+            Events.Engine.gen_image,
+            sender,
+            details=details,
+            size=size,
+            color=color,
+        )
+        return img
 
     @classmethod
     @gen.coroutine

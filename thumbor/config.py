@@ -453,7 +453,7 @@ Config.define(
         'thumbor.filters.rotate',
         # 'thumbor.filters.round_corner',
         # 'thumbor.filters.watermark',
-        # 'thumbor.filters.fill',
+        'thumbor.filters.fill',
         # 'thumbor.filters.strip_exif',
         # 'thumbor.filters.strip_icc',
         # # TODO: Fix frame filter. Maybe @rfloriano has fixed it in his branch?

@@ -33,6 +33,8 @@ def plug_into_lifecycle():
     Events.subscribe(Events.Engine.convert_to_grayscale, convert_to_grayscale)
     Events.subscribe(Events.Engine.set_image_data, set_image_data)
     Events.subscribe(Events.Engine.get_image_size, get_image_size)
+    Events.subscribe(Events.Engine.gen_image, gen_image)
+    Events.subscribe(Events.Engine.paste, paste)
 
 
 @tornado.gen.coroutine
@@ -111,3 +113,14 @@ def set_image_data(sender, details, data):  # pylint: disable=unused-argument
 def get_image_size(sender, details):  # pylint: disable=unused-argument
     'Gets the image dimensions'
     return PillowExtensions.get_image_size(details)
+
+
+@tornado.gen.coroutine
+def gen_image(sender, details, size, color):  # pylint: disable=unused-argument
+    'Generate a new the image'
+    return PillowExtensions.gen_image(details, size, color)
+
+@tornado.gen.coroutine
+def paste(sender, details, other_engine, pos, merge):  # pylint: disable=unused-argument
+    'Paste the image with another'
+    return PillowExtensions.paste(details, other_engine, pos, merge)

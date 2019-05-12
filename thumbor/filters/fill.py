@@ -8,6 +8,9 @@
 # http://www.opensource.org/licenses/mit-license
 # Copyright (c) 2011 globo.com thumbor@googlegroups.com
 
+from tornado import gen
+
+from thumbor import Engine
 from thumbor.filters import BaseFilter, filter_method
 from thumbor.ext.filters import _fill
 
@@ -19,11 +22,12 @@ class Filter(BaseFilter):
         r, g, b = _fill.apply(mode, data)
         return '%02x%02x%02x' % (r, g, b)
 
+    @gen.coroutine
     @filter_method(r'[\w]+', BaseFilter.Boolean)
-    def fill(self, color, fill_transparent=False):
-        self.fill_engine = self.engine.__class__(self.context)
-        bx = self.context.request.width if self.context.request.width != 0 else self.engine.size[0]
-        by = self.context.request.height if self.context.request.height != 0 else self.engine.size[1]
+    def fill(self, details, color, fill_transparent=False):
+        width, height = yield Engine.get_image_size(self, details)
+        bx = details.request_parameters.width if details.request_parameters.width != 0 else width
+        by = details.request_parameters.height if details.request_parameters.height != 0 else height
 
         # if the color is 'auto'
         # we will calculate the median color of
@@ -32,14 +36,14 @@ class Filter(BaseFilter):
             color = self.get_median_color()
 
         try:
-            self.fill_engine.image = self.fill_engine.gen_image((bx, by), color)
+            fill_image = yield Engine.gen_image(self, details, (bx, by), color)
         except (ValueError, RuntimeError):
-            self.fill_engine.image = self.fill_engine.gen_image((bx, by), '#%s' % color)
+            fill_image = yield Engine.gen_image(self, details, (bx, by), '#%s' % color)
 
-        ix, iy = self.engine.size
+        px = int((bx - width) / 2)  # top left
+        py = int((by - height) / 2)
 
-        px = (bx - ix) / 2  # top left
-        py = (by - iy) / 2
-
-        self.fill_engine.paste(self.engine, (px, py), merge=fill_transparent)
-        self.engine.image = self.fill_engine.image
+        mode, imgdata = yield Engine.paste(self, details, fill_image, (px, py), merge=fill_transparent)
+        yield Engine.set_image_data(self, details, imgdata)
+        # yield Engine.set_image_data(self, details, imgdata)
+        # self.engine.image = self.fill_engine.image

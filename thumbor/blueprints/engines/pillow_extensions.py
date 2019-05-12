@@ -15,9 +15,15 @@ from io import BytesIO
 
 import piexif
 from PIL import Image, JpegImagePlugin, ImageSequence, ImageDraw
+from thumbor.handlers.request_details import RequestDetails
 
 from thumbor.utils import logger
 
+try:
+    from thumbor.ext.filters import _composite
+    FILTERS_AVAILABLE = True
+except ImportError:
+    FILTERS_AVAILABLE = False
 
 class PillowExtensions:
     'Handles pillow operations'
@@ -268,6 +274,14 @@ class PillowExtensions:
         return img.size
 
     @staticmethod
+    def gen_image(self, size, color):
+        'Generate an new RGBA image'
+        if color == 'transparent':
+            color = None
+        img = Image.new("RGBA", size, color)
+        return img
+
+    @staticmethod
     def serialize_image(details):
         'Serializes an image to bytes'
         img = details.metadata['image']
@@ -299,6 +313,54 @@ class PillowExtensions:
         results = img_buffer.getvalue()
         img_buffer.close()
         details.transformed_image = results
+
+    @staticmethod
+    def paste(details, other_image, pos, merge):
+        'Paste an image in another'
+        def new_details_image(image):
+            img_details = RequestDetails(None, None)
+            img_details.metadata['image'] = image
+            return img_details
+        
+        if merge and not FILTERS_AVAILABLE:
+            raise RuntimeError(
+                'You need filters enabled to use paste with merge. Please reinstall ' +
+                'thumbor with proper compilation of its filters.')
+
+        img = details.metadata['image']
+        
+        # img = PillowExtensions._enable_alpha(img)
+        # other_image = PillowExtensions._enable_alpha(other_image)
+        
+        if merge:
+            # import ipdb; ipdb.set_trace()
+            img_size = img.size
+            other_size = other_image.size
+
+            other_image = other_image.convert('RGB')
+            img_details = new_details_image(img)
+            other_details = new_details_image(other_image)
+
+            img_mode, img_data = PillowExtensions.get_image_data_as_rgb(img_details)
+            other_mode, other_data = PillowExtensions.get_image_data_as_rgb(other_details)
+            imgdata = _composite.apply(
+                other_mode.encode('utf-8'), other_data, other_size[0], other_size[1],
+                img_data, img_size[0], img_size[1], pos[0], pos[1])
+            
+            import ipdb; ipdb.set_trace()
+            return other_mode, imgdata
+        else:
+            other_image.paste(img, pos)
+            other_image = other_image.convert(details.metadata['image'].mode)
+            img_details = new_details_image(other_image)
+            return  PillowExtensions.get_image_data_as_rgb(img_details)
+            
+
+    @staticmethod
+    def _enable_alpha(image):
+        if image.mode != 'RGBA':
+            image = image.convert('RGBA')
+        return image
 
     @staticmethod
     def _configure_jpeg(img, details, options):

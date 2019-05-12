@@ -146,6 +146,10 @@ class Events(object):
         get_image_size = signal("engine.get_image_size")
 
         draw_rectangle = signal("engine.draw_rectangle")
+        
+        paste = signal("engine.paste")
+
+        gen_image = signal("engine.gen_image")
 
     class Healthcheck(object):  # pylint: disable=too-few-public-methods
         "Healthcheck events"
